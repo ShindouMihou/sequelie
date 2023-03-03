@@ -95,7 +95,7 @@ func TestGetAndTransformMarshalJson(t *testing.T) {
 
 func TestGetDeclaration(t *testing.T) {
 	v := Get("books.get_romance_books")
-	if v != "SELECT * FROM books WHERE category = romance" {
+	if v != "SELECT * FROM books WHERE category = 'romance'" {
 		t.Error("books.get_romance_books does not match desired value, instead got: ", v)
 	}
 }

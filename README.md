@@ -146,3 +146,33 @@ func (example *ExampleStruct) MarshalSequelie() string {
 ```
 
 If Sequelie cannot find any marshaling method for the structure, it will use `fmt.Sprint` to marshal the data into a String.
+
+##### 🔬 Reusing Queries
+
+Sequelie supports a moderate amount of query reuse through an operator named `Insert Operator` which enables you to insert 
+existing queries into the new query, albeit, this is a simple addition that requires the query to be:
+1. Initialized **AFTER** the queries being inserted, this means that all queries to be reused must be initialized first.
+2. `Local Operators` has to be enabled for the query.
+
+To get started with reusing queries, you have to remember the operator which is:
+```sql
+{$INSERT:namespace.query}
+```
+
+Once you know the operator, we can start with enabling `Local Operators` for the specific query. The reason that this mode exists 
+is to prevent additional overhead when reading queries or files that do not use operators such as `Insert Operator`, to enable this, 
+you have to add the line:
+```sql
+-- sequelie:enable operators
+```
+
+And now, you can then reuse the queries such in the example of:
+```sql
+-- sequelie:query reuse
+-- sequelie:enable operators
+
+SELECT * FROM {$$TABLE} AND {$INSERT:articles.get}
+```
+
+You can view the full example of this in:
+- [`examples/articles.sql`](examples/articles.sql)

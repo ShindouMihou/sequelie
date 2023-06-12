@@ -98,6 +98,10 @@ func TestGetDeclaration(t *testing.T) {
 	if v != "SELECT * FROM books WHERE category = 'romance'" {
 		t.Error("books.get_romance_books does not match desired value, instead got: ", v)
 	}
+	v = Get("articles.reuse")
+	if v != "SELECT * FROM articles AND "+Get("articles.get") {
+		t.Error("articles.reuse does not match desired value, instead got: ", v)
+	}
 }
 
 func BenchmarkReadDirectory(b *testing.B) {
@@ -113,6 +117,16 @@ func BenchmarkReadDirectory(b *testing.B) {
 func BenchmarkReadFile(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		err := ReadFile("examples/books.sql")
+		if err != nil {
+			b.Fatal("failed to read books.sql: ", err)
+			return
+		}
+	}
+}
+
+func BenchmarkReadFileWithOperator(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		err := ReadFile("examples/articles.sql")
 		if err != nil {
 			b.Fatal("failed to read books.sql: ", err)
 			return

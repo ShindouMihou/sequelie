@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"strings"
+	"sync"
 )
 
 type iReader struct{}
@@ -24,11 +25,22 @@ var declareBytes = []byte("declare")
 var queryBytes = []byte("query")
 var namespaceBytes = []byte("namespace")
 
+var enableBytes = []byte("enable")
+var operatorsBytes = []byte("operators")
+
 var separatorBytes = []byte(".")
 var newLineBytes = []byte("\n")
 
 var declarationPrefixBytes = []byte("{$$")
 var encloserBytes = []byte{'}'}
+
+var insertPrefixBytes = []byte("{$INSERT:")
+
+var mutex = sync.RWMutex{}
+
+type localOptions struct {
+	Operators bool
+}
 
 func (reader *iReader) read(file string, m map[string]string, options *Options) error {
 	f, err := os.Open(file)
@@ -46,10 +58,16 @@ func (reader *iReader) read(file string, m map[string]string, options *Options) 
 	var builder strings.Builder
 	var namespace, address *[]byte
 	var declarations [][][]byte
+	local := localOptions{Operators: false}
+
 	var push = func() error {
 		if address != nil {
+			mutex.Lock()
 			m[string(*address)] = strings.TrimSpace(builder.String())
+			mutex.Unlock()
+
 			builder.Reset()
+			local = localOptions{Operators: false}
 			return nil
 		}
 		return errors.New("[no_address] file " + file + " has a query with no address")
@@ -66,6 +84,28 @@ func (reader *iReader) read(file string, m map[string]string, options *Options) 
 				} else {
 					for _, declaration := range declarations {
 						line = bytes.ReplaceAll(line, declaration[0], declaration[1])
+					}
+					if local.Operators {
+						if namespace != nil {
+							clauses := bytes.Fields(line)
+							for _, clause := range clauses {
+								if bytes.HasPrefix(clause, insertPrefixBytes) && bytes.HasSuffix(clause, encloserBytes) {
+									name := clause[len(insertPrefixBytes):]
+									name = name[:len(name)-1]
+
+									mutex.RLock()
+									v, e := m[string(name)]
+									mutex.RUnlock()
+									if e {
+										line = bytes.Replace(line, clause, []byte(v), 1)
+									} else {
+										options.Logger.Println(
+											"sequelie couldn't insert ", string(name), " into ", string(*address),
+											", it is likely because the former hasn't been initialized.")
+									}
+								}
+							}
+						}
 					}
 				}
 				builder.Write(newLineBytes)
@@ -92,6 +132,10 @@ func (reader *iReader) read(file string, m map[string]string, options *Options) 
 					bytes.Join([][]byte{declarationPrefixBytes, encloserBytes}, args[1]),
 					line[(prefixBytesLen + 1 + len(args[0]) + 1 + len(args[1])):],
 				})
+			} else if bytes.EqualFold(args[0], enableBytes) {
+				if bytes.EqualFold(args[1], operatorsBytes) {
+					local.Operators = true
+				}
 			}
 		}
 	}

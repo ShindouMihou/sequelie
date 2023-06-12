@@ -29,6 +29,8 @@ func readDirs(directories []string, options *Options) error {
 	return nil
 }
 
+var sqlExtensionBytes = []byte(".sql")
+
 func readDir(directory string, options *Options) error {
 	dir, err := os.ReadDir(directory)
 	if err != nil {
@@ -51,7 +53,7 @@ func readDir(directory string, options *Options) error {
 			}()
 			continue
 		}
-		if strings.HasSuffix(file.Name(), ".sql") {
+		if insensitiveHasSuffix([]byte(file.Name()), sqlExtensionBytes) {
 			waitGroup.Add(1)
 			go func() {
 				if err := reader.read(directory+file.Name(), store, options); err != nil {

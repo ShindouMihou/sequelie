@@ -75,36 +75,39 @@ func (reader *iReader) read(file string, m map[string]string, options *Options) 
 
 	for buf.Scan() {
 		line := buf.Bytes()
-		if !insensitiveHasPrefix(line, prefixBytes) && address != nil {
-			if bytes.HasPrefix(line, commentBytes) && !options.AllowComments {
-				continue
-			} else {
-				for _, declaration := range declarations {
-					line = bytes.ReplaceAll(line, declaration[0], declaration[1])
-				}
-				if local.Operators && namespace != nil {
-					clauses := bytes.Fields(line)
-					for _, clause := range clauses {
-						if bytes.HasPrefix(clause, insertPrefixBytes) && bytes.HasSuffix(clause, encloserBytes) {
-							name := clause[len(insertPrefixBytes):]
-							name = name[:len(name)-1]
+		if !insensitiveHasPrefix(line, prefixBytes) {
+			// FUN FACT: This if-statement exists to prevent white spaces while address is null.
+			if address != nil {
+				if bytes.HasPrefix(line, commentBytes) && !options.AllowComments {
+					continue
+				} else {
+					for _, declaration := range declarations {
+						line = bytes.ReplaceAll(line, declaration[0], declaration[1])
+					}
+					if local.Operators && namespace != nil {
+						clauses := bytes.Fields(line)
+						for _, clause := range clauses {
+							if bytes.HasPrefix(clause, insertPrefixBytes) && bytes.HasSuffix(clause, encloserBytes) {
+								name := clause[len(insertPrefixBytes):]
+								name = name[:len(name)-1]
 
-							mutex.RLock()
-							v, e := m[string(name)]
-							mutex.RUnlock()
-							if e {
-								line = bytes.Replace(line, clause, []byte(v), 1)
-							} else {
-								options.Logger.Println(
-									"ERR sequelie couldn't insert ", string(name), " into ", string(*address),
-									", it is likely because the former hasn't been initialized.")
+								mutex.RLock()
+								v, e := m[string(name)]
+								mutex.RUnlock()
+								if e {
+									line = bytes.Replace(line, clause, []byte(v), 1)
+								} else {
+									options.Logger.Println(
+										"ERR sequelie couldn't insert ", string(name), " into ", string(*address),
+										", it is likely because the former hasn't been initialized.")
+								}
 							}
 						}
 					}
 				}
+				builder.Write(newLineBytes)
+				builder.Write(line)
 			}
-			builder.Write(newLineBytes)
-			builder.Write(line)
 			continue
 		}
 		args := bytes.Fields(line[prefixBytesLen:])

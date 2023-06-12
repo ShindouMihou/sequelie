@@ -99,3 +99,23 @@ func TestGetDeclaration(t *testing.T) {
 		t.Error("books.get_romance_books does not match desired value, instead got: ", v)
 	}
 }
+
+func BenchmarkReadDirectory(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		err := ReadDirectory("examples/")
+		if err != nil {
+			b.Fatal("failed to read examples dir: ", err)
+			return
+		}
+	}
+}
+
+func BenchmarkReadFile(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		err := ReadFile("examples/books.sql")
+		if err != nil {
+			b.Fatal("failed to read books.sql: ", err)
+			return
+		}
+	}
+}

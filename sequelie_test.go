@@ -2,7 +2,6 @@ package sequelie
 
 import (
 	"fmt"
-
 	"testing"
 )
 
@@ -101,6 +100,14 @@ func TestGetDeclaration(t *testing.T) {
 	v = Get("articles.reuse").String()
 	if v != "SELECT * FROM articles AND "+Get("articles.get").String() {
 		t.Error("articles.reuse does not match desired value, instead got: ", v)
+	}
+}
+
+func TestGenerate(t *testing.T) {
+	err := Generate()
+	if err != nil {
+		t.Error(err)
+		return
 	}
 }
 

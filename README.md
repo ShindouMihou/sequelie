@@ -8,6 +8,15 @@ To learn by code, you can review our examples:
 - [using `books.get`](examples/get)
 - [using `books.get_with_field`](examples/get-with-field)
 
+#### 📚 Table of Contents
+- [`Installation`](#-installation)
+- [`Creating Sequelie Files`](#-creating-sequelie-files)
+- [`Declarations`](#-declarations)
+- [`Literal Interpolation`](#-literal-interpolation)
+- [`Reusing Queries`](#-reusing-queries)
+- [`Codegen`](#-codegen)
+- [`TODO`](#-todo)
+
 #### 📦 Installation
 ```shell
 go install github.com/ShindouMihou/sequelie

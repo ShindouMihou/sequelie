@@ -127,7 +127,7 @@ To use literal interpolation, you can use the `{&key}` placeholder, such as the 
 SELECT * FROM {$$TABLE} WHERE {&field} = $1 
 ```
 ```go
-query := sequelie.GetAndTransform("books.get_with_field", sequelie.Map{"field":"id"})
+query := sequelie.Get("books.get_with_field").Interpolate(sequelie.Map{"field":"id"})
 ```
 
 Additionally, Sequelie can automatically handle marshaling the data into JSON by adding the following 

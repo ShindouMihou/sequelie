@@ -181,8 +181,8 @@ You can view the full example of this in:
 In light of the future of the library, here are the planned features of Sequelie that will one day transform the 
 Golang SQL ORM-less ecosystems.
 - [ ] Generative Sequelie
-  - [ ] Generating `.go` files containing the SQL queries.
-  - [ ] Adding `sequelie.Sql` type to support direct interpolation in `.go` generated files.
+  - [x] Generating `.go` files containing the SQL queries.
+  - [x] Adding `sequelie.Sql` type to support direct interpolation in `.go` generated files.
   - [ ] Adding a CLI to compile, or generate, the SQL files into `.go`
 - [ ] Operative Sequelie
   - [ ] Supporting deferring of `Insert Operator`-enabled queries when the dependencies are not initialized.

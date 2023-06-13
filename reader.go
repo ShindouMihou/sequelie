@@ -42,7 +42,7 @@ type localOptions struct {
 	Operators bool
 }
 
-func (reader *iReader) read(file string, m map[string]string, options *Options) error {
+func (reader *iReader) read(file string, m map[string]*Query, options *Options) error {
 	f, err := os.Open(file)
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func (reader *iReader) read(file string, m map[string]string, options *Options) 
 	var push = func() error {
 		if address != nil {
 			mutex.Lock()
-			m[string(*address)] = strings.TrimSpace(builder.String())
+			m[string(*address)] = ptr(Query(strings.TrimSpace(builder.String())))
 			mutex.Unlock()
 
 			builder.Reset()
@@ -95,7 +95,7 @@ func (reader *iReader) read(file string, m map[string]string, options *Options) 
 								v, e := m[string(name)]
 								mutex.RUnlock()
 								if e {
-									line = bytes.Replace(line, clause, []byte(v), 1)
+									line = bytes.Replace(line, clause, v.Bytes(), 1)
 								} else {
 									options.Logger.Println(
 										"ERR sequelie couldn't insert ", string(name), " into ", string(*address),

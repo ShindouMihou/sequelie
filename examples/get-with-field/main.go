@@ -18,7 +18,7 @@ func main() {
 	}
 	// In this example, we are retrieving the "books.get_with_field" query from the books.sql and
 	// making it basically like "books.get" as an example.
-	query := sequelie.GetAndTransform("books.get_with_field", sequelie.Map{"field": "id"})
+	query := sequelie.Get("books.get_with_field").Interpolate(sequelie.Map{"field": "id"})
 	rows, err := sequel.Query(query, 0)
 	if err != nil {
 		log.Fatal("failed to get rows in postgres: ", err)

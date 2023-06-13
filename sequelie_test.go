@@ -2,7 +2,6 @@ package sequelie
 
 import (
 	"fmt"
-
 	"testing"
 )
 
@@ -47,14 +46,14 @@ func TestReadDir(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	v := Get("books.get")
+	v := Get("books.get").String()
 	if v != "SELECT * FROM books WHERE id = $1" {
 		t.Error("books.get does not match desired value, instead got:", v)
 	}
 }
 
 func TestGetAndTransformMarshalString(t *testing.T) {
-	v := GetAndTransform("books.test", Map{
+	v := Get("books.test").Interpolate(Map{
 		"field": "id",
 		"value": &marshalStringStruct{"world"},
 	})
@@ -64,7 +63,7 @@ func TestGetAndTransformMarshalString(t *testing.T) {
 }
 
 func TestGetAndTransformString(t *testing.T) {
-	v := GetAndTransform("books.test", Map{
+	v := Get("books.test").Interpolate(Map{
 		"field": "id",
 		"value": &stringStruct{"world"},
 	})
@@ -74,7 +73,7 @@ func TestGetAndTransformString(t *testing.T) {
 }
 
 func TestGetAndTransformMarshalSequelie(t *testing.T) {
-	v := GetAndTransform("books.test", Map{
+	v := Get("books.test").Interpolate(Map{
 		"field": "id",
 		"value": &sequelieMarshalStruct{"world"},
 	})
@@ -84,7 +83,7 @@ func TestGetAndTransformMarshalSequelie(t *testing.T) {
 }
 
 func TestGetAndTransformMarshalJson(t *testing.T) {
-	v := GetAndTransform("books.test", Map{
+	v := Get("books.test").Interpolate(Map{
 		"field": "id",
 		"value": &marshalJsonStruct{"world"},
 	})
@@ -94,13 +93,21 @@ func TestGetAndTransformMarshalJson(t *testing.T) {
 }
 
 func TestGetDeclaration(t *testing.T) {
-	v := Get("books.get_romance_books")
+	v := Get("books.get_romance_books").String()
 	if v != "SELECT * FROM books WHERE category = 'romance'" {
 		t.Error("books.get_romance_books does not match desired value, instead got: ", v)
 	}
-	v = Get("articles.reuse")
-	if v != "SELECT * FROM articles AND "+Get("articles.get") {
+	v = Get("articles.reuse").String()
+	if v != "SELECT * FROM articles AND "+Get("articles.get").String() {
 		t.Error("articles.reuse does not match desired value, instead got: ", v)
+	}
+}
+
+func TestGenerate(t *testing.T) {
+	err := Generate()
+	if err != nil {
+		t.Error(err)
+		return
 	}
 }
 

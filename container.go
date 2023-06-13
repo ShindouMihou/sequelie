@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-var store = make(map[string]string)
+var store = make(map[string]*Query)
 
 func readDirs(directories []string, options *Options) error {
 	var waitGroup sync.WaitGroup

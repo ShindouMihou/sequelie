@@ -8,6 +8,15 @@ To learn by code, you can review our examples:
 - [using `books.get`](examples/get)
 - [using `books.get_with_field`](examples/get-with-field)
 
+#### 📚 Table of Contents
+- [`Installation`](#-installation)
+- [`Creating Sequelie Files`](#-creating-sequelie-files)
+- [`Declarations`](#-declarations)
+- [`Literal Interpolation`](#-literal-interpolation)
+- [`Reusing Queries`](#-reusing-queries)
+- [`Codegen`](#-codegen)
+- [`TODO`](#-todo)
+
 #### 📦 Installation
 ```shell
 go install github.com/ShindouMihou/sequelie
@@ -118,7 +127,7 @@ To use literal interpolation, you can use the `{&key}` placeholder, such as the 
 SELECT * FROM {$$TABLE} WHERE {&field} = $1 
 ```
 ```go
-query := sequelie.GetAndTransform("books.get_with_field", sequelie.Map{"field":"id"})
+query := sequelie.Get("books.get_with_field").Interpolate(sequelie.Map{"field":"id"})
 ```
 
 Additionally, Sequelie can automatically handle marshaling the data into JSON by adding the following 
@@ -177,12 +186,45 @@ SELECT * FROM {$$TABLE} AND {$INSERT:articles.get}
 You can view the full example of this in:
 - [`examples/articles.sql`](examples/articles.sql)
 
+##### 🚃 Codegen
+
+Sequelie includes support for transpiling Sequelie files into Golang files, reducing the start-up time of application. 
+To perform code generation with Sequelie, there are two methods available:
+1. [`Manual Codegen`](#manual-codegen): used when you don't want to use the cli.
+2. [`CLI Codegen`](https://github.com/ShindouMihou/sequelie/releases): used when you want to use the cli.
+
+###### Manual Codegen
+
+Sequelie exposes the `generate` function that is used to export all the queries into Golang files under the `.sequelie/` 
+folder, you can run the following line to have it exported:
+```go
+// REMINDER: You need to have Sequelie read the queries first using the `.Read` functions.
+sequelie.Generate()
+```
+
+##### CLI Codegen
+
+Sequelie also offers a CLI tool that can handle the generations, you can download the binaries from:
+- [`GitHub Releases`](https://github.com/ShindouMihou/sequelie/releases)
+
+There is only one command in the CLI and that is `generate`:
+```shell
+# By default, if there is no `-d` or `--directory` parameter, it will use the `./` or working directory
+# and search for Sequelie files recursively, this can be more expensive and time-consuming as it has to
+# traverse through many folders.
+sequelie generate
+
+# It is recommended to specify where your Sequelie files are using the `-d` or `--directory` parameter.
+# An example using the current repository would be:
+sequelie generate -d examples/
+```
+
 ##### 🎉 TODO
 In light of the future of the library, here are the planned features of Sequelie that will one day transform the 
 Golang SQL ORM-less ecosystems.
-- [ ] Generative Sequelie
-  - [ ] Generating `.go` files containing the SQL queries.
-  - [ ] Adding `sequelie.Sql` type to support direct interpolation in `.go` generated files.
-  - [ ] Adding a CLI to compile, or generate, the SQL files into `.go`
+- [x] Generative Sequelie
+  - [x] Generating `.go` files containing the SQL queries.
+  - [x] Adding `sequelie.Sql` type to support direct interpolation in `.go` generated files.
+  - [x] Adding a CLI to compile, or generate, the SQL files into `.go`
 - [ ] Operative Sequelie
   - [ ] Supporting deferring of `Insert Operator`-enabled queries when the dependencies are not initialized.

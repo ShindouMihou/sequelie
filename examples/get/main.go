@@ -18,7 +18,7 @@ func main() {
 	}
 	// In this example, we are retrieving the "books.get" query from the books.sql and uses
 	// the database/sql lib to handle the insertion of the id's value.
-	rows, err := sequel.Query(sequelie.Get("books.get"), 0)
+	rows, err := sequel.Query(sequelie.Get("books.get").String(), 0)
 	if err != nil {
 		log.Fatal("failed to get rows in postgres: ", err)
 		return

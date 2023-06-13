@@ -32,11 +32,7 @@ func ReadDirectoryWithSettings(dir string, settings *Options) error {
 	return readDir(dir, settings)
 }
 
-func GetAndTransform(address string, transformers Map) string {
-	return transform(Get(address), transformers, &Settings)
-}
-
-func Get(address string) string {
+func Get(address string) *Query {
 	q, ex := store[address]
 	if !ex {
 		panic("cannot find any query with the address " + address)

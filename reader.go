@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"strings"
 	"sync"
@@ -42,19 +44,8 @@ type localOptions struct {
 	Operators bool
 }
 
-func (reader *iReader) read(file string, m map[string]*Query, options *Options) error {
-	f, err := os.Open(file)
-	if err != nil {
-		return err
-	}
-	defer func(f *os.File) {
-		err := f.Close()
-		if err != nil {
-			options.Logger.Println("ERR sequelie failed to close file ", file, ": ", err)
-		}
-	}(f)
+func (reader *iReader) scan(f io.Reader, m map[string]*Query, options *Options) error {
 	buf := bufio.NewScanner(f)
-
 	var builder strings.Builder
 	var namespace, address *[]byte
 	var declarations [][][]byte
@@ -70,7 +61,7 @@ func (reader *iReader) read(file string, m map[string]*Query, options *Options) 
 			local = localOptions{Operators: false}
 			return nil
 		}
-		return errors.New("[no_address] file " + file + " has a query with no address")
+		return errors.New("[no_address] file %s has a query with no address")
 	}
 
 	for buf.Scan() {
@@ -116,7 +107,7 @@ func (reader *iReader) read(file string, m map[string]*Query, options *Options) 
 				namespace = ptr(bytes.ToLower(args[1]))
 			} else if bytes.EqualFold(args[0], queryBytes) {
 				if namespace == nil {
-					return errors.New("[no_namespace] file " + file + " has no namespace")
+					return errors.New("[no_namespace] file %s has no namespace")
 				}
 				if address != nil {
 					if err := push(); err != nil {
@@ -137,4 +128,21 @@ func (reader *iReader) read(file string, m map[string]*Query, options *Options) 
 		}
 	}
 	return push()
+}
+
+func (reader *iReader) read(file string, m map[string]*Query, options *Options) error {
+	f, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			options.Logger.Println("ERR sequelie failed to close file ", file, ": ", err)
+		}
+	}(f)
+	if err = reader.scan(f, m, options); err != nil {
+		return errors.New(fmt.Sprintf(err.Error(), file))
+	}
+	return nil
 }
